@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-xl-4 mb-4">
+        <div class="card p-4">
+            <h4 class="mb-3 text-primary fw-bold"><i class="bi bi-person-plus-fill me-2"></i>Registrar Alumno</h4>
+            <form action="{{ url_for('alumnos') }}" method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Matrícula</label>
+                    <input type="text" name="matricula" class="form-control" placeholder="Ej. AL202601" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nombre(s)</label>
+                    <input type="text" name="nombres" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Apellidos</label>
+                    <input type="text" name="apellidos" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Correo Electrónico</label>
+                    <input type="email" name="correo" class="form-control" placeholder="nombre@institucion.edu" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Fecha de Nacimiento</label>
+                    <input type="date" name="fecha_nacimiento" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save me-2"></i>Guardar Alumno</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-xl-8 mb-4">
+        <div class="table-responsive">
+            <h4 class="mb-3 text-dark fw-bold"><i class="bi bi-table me-2"></i>Alumnos Registrados</h4>
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Matrícula</th>
+                        <th>Nombre Completo</th>
+                        <th>Correo</th>
+                        <th>F. Nacimiento</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alumno in alumnos %}
+                    <tr>
+                        <td class="fw-bold text-secondary">{{ alumno.matricula }}</td>
+                        <td>{{ alumno.nombres }} {{ alumno.apellidos }}</td>
+                        <td>{{ alumno.correo }}</td>
+                        <td>{{ alumno.fecha_nacimiento }}</td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ alumno._id }}">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <a href="{{ url_for('eliminar_alumno', id=alumno._id) }}" class="btn btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este registro?')">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <div class="modal fade" id="editModal{{ alumno._id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-warning text-dark">
+                                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Editar Alumno: {{ alumno.matricula }}</h5>
+                                    <button type="button" class="btn-close" data-bs-shadow="none" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form action="{{ url_for('editar_alumno', id=alumno._id) }}" method="POST">
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Nombre(s)</label>
+                                            <input type="text" name="nombres" class="form-control" value="{{ alumno.nombres }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Apellidos</label>
+                                            <input type="text" name="apellidos" class="form-control" value="{{ alumno.apellidos }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Correo Electrónico</label>
+                                            <input type="email" name="correo" class="form-control" value="{{ alumno.correo }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Fecha de Nacimiento</label>
+                                            <input type="date" name="fecha_nacimiento" class="form-control" value="{{ alumno.fecha_nacimiento }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-warning text-dark fw-semibold">Actualizar Datos</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No hay alumnos registrados en la base de datos actualmente.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

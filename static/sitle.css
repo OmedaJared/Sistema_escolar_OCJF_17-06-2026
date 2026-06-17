@@ -1,0 +1,19 @@
+/* Ejemplo de estilos generales para tu sistema escolar */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+}
+
+.navbar {
+    background-color: #1a252f;
+    padding: 1rem;
+}
+
+.btn-custom {
+    background-color: #3498db;
+    color: white;
+    border-radius: 4px;
+}
+
+/* Agrega aquí el resto de tus estilos */
