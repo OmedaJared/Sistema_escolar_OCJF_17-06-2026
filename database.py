@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Configuración de MongoDB (Local o Atlas a través de variables de entorno)
 MONGODB_USERNAME="j25759298_db_user"
 MONGODB_PASSWORD="y6Kf7b33aj3jaadx"
 MONGODB_URI="mongodb+srv://j25759298_db_user:y6Kf7b33aj3jaadx@cluster0.pgyhwyx.mongodb.net"
@@ -23,3 +24,4 @@ except Exception as e:
 
 def get_db():
     return db
+
