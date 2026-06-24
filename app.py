@@ -7,27 +7,27 @@ app.secret_key = "clave_secreta_institucional_desarrollo"
 
 db = get_db()
 
-# --- HELPER PARA CALCULAR RENDIMIENTO CORREGIDO ---
+
 def calcular_rendimiento_alumno(alumno_id, curso_id):
     try:
-        # 1. Contamos cuántas tareas existen para este curso en total
+        
         tareas_curso = list(db.tareas.find({"curso_id": str(curso_id)}))
         tareas_totales = len(tareas_curso)
         
         if tareas_totales == 0:
-            return 100  # Si no hay tareas, el alumno va al corriente (100%)
+            return 100 
 
-        # 2. Extraemos los IDs de esas tareas como texto
+        
         lista_tarea_ids = [str(t["_id"]) for t in tareas_curso]
 
-        # 3. Contamos cuántas de ESAS tareas específicas ya entregó el alumno
+        
         tareas_entregadas = db.entregas.count_documents({
             "alumno_id": str(alumno_id),
             "tarea_id": {"$in": lista_tarea_ids},
             "estado": "entregado"
         })
 
-        # 4. Retornamos el porcentaje real entero
+        
         return int((tareas_entregadas / tareas_totales) * 100)
     except Exception as e:
         print(f"Error al calcular rendimiento: {e}")
