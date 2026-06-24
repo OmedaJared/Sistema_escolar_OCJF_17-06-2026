@@ -25,6 +25,34 @@
                     <label class="form-label fw-semibold">Fecha de Nacimiento</label>
                     <input type="date" name="fecha_nacimiento" class="form-control" required>
                 </div>
+                <div class="mb-3">
+    <label class="form-label fw-semibold">Grupo Asignado</label>
+    <select name="grupo" class="form-select" required>
+        <option value="" selected disabled>Selecciona un grupo...</option>
+        {% for i in range(1, 7) %}
+            <option value="{{ i }}A">{{ i }}°A</option>
+            <option value="{{ i }}B">{{ i }}°B</option>
+            <option value="{{ i }}C">{{ i }}°C</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="mb-3">
+    <label class="form-label fw-semibold d-block">Materias Base a Cursar</label>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" checked disabled>
+        <label class="form-check-label text-dark fw-bold">Programación</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" checked disabled>
+        <label class="form-check-label text-dark fw-bold">Mecatrónica</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" checked disabled>
+        <label class="form-check-label text-dark fw-bold">Cristianismo</label>
+    </div>
+    <small class="text-muted d-block mt-1">Estas 3 materias se asignarán automáticamente al estudiante.</small>
+</div>
                 <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save me-2"></i>Guardar Alumno</button>
             </form>
         </div>

@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title fw-bold text-secondary mb-3">🗂️ Selecciona un Grupo Escolar:</h5>
+            <div class="d-flex flex-wrap gap-2">
+                {% for g in grupos %}
+                    <a href="{{ url_for('grupos', grupo_id=g) }}" 
+                       class="btn {% if grupo_seleccionado == g %}btn-primary shadow{% else %}btn-outline-primary{% endif %} px-3 py-2">
+                       Grupo {{ g }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% if grupo_seleccionado %}
+    
+        <div class="row">
+            <div class="col-md-6">
+                
+                <div class="card mb-4 border-success shadow-sm">
+                    <div class="card-header bg-success text-white py-2">
+                        <h6 class="mb-0 fw-bold">➕ Asignar Curso a {{ grupo_seleccionado }}</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <form action="{{ url_for('grupos') }}" method="POST">
+                            <input type="hidden" name="action" value="crear_curso">
+                            <input type="hidden" name="grupo" value="{{ grupo_seleccionado }}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Asignatura:</label>
+                                <select name="materia" class="form-select form-select-sm" required>
+                                    <option value="" disabled selected>-- Selecciona Materia --</option>
+                                    {% for mat in materias %}
+                                        <option value="{{ mat.nombre_asignatura }}">{{ mat.codigo_materia }} - {{ mat.nombre_asignatura }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Docente Asignado:</label>
+                                <select name="maestro_id" class="form-select form-select-sm" required>
+                                    <option value="" disabled selected>-- Selecciona Maestro --</option>
+                                    {% for m in maestros %}
+                                        <option value="{{ m._id|string }}">
+                                            {{ m.nombre_completo }} — [Emp: {{ m.num_empleado }}]
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Crear e Iniciar Curso</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-dark text-white py-2">
+                        <h6 class="mb-0">Materias Activas de {{ grupo_seleccionado }}</h6>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        {% if cursos_del_grupo %}
+                            {% for c in cursos_del_grupo %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center {% if curso_seleccionado_id == (c._id|string) %}active{% endif %}">
+                                    
+                                    <a href="{{ url_for('grupos', grupo_id=grupo_seleccionado, curso_id=c._id) }}" 
+                                       class="text-decoration-none flex-grow-1 {% if curso_seleccionado_id == (c._id|string) %}text-white fw-bold{% else %}text-dark{% endif %}">
+                                       📚 {{ c.materia }}
+                                    </a>
+
+                                    <a href="{{ url_for('eliminar_curso', id_curso=c._id) }}" 
+                                       class="btn btn-sm p-1 {% if curso_seleccionado_id == (c._id|string) %}btn-outline-light text-white{% else %}btn-outline-danger{% endif %} border-0 ms-2"
+                                       onclick="return confirm('¿Estás completamente seguro de que deseas borrar este curso? Se eliminarán todas las tareas vinculadas.');"
+                                       title="Borrar Curso">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-muted p-3 small text-center">Este grupo no tiene materias asignadas aún. ¡Crea la primera arriba!</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+                {% if curso %}
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="card-title mb-1"><i class="bi bi-journal-bookmark-fill me-2"></i>Asignatura: {{ materia }}</h5>
+                        <hr class="border-white opacity-25 my-2">
+                        <div class="row small">
+                            <div class="col-sm-7">
+                                <strong>Docente:</strong> 
+                                {% if docente %}
+                                    {{ docente.nombre_completo }}
+                                {% else %}
+                                    <span class="text-white-50">No asignado</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-sm-5 text-sm-end">
+                                <strong>N° Empleado:</strong> 
+                                {% if docente %}
+                                    {{ docente.num_empleado }}
+                                {% else %}
+                                    <span class="text-white-50">N/A</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="mb-4 p-3 bg-light rounded border">
+                            <h6 class="text-secondary mb-3"><i class="bi bi-list-task me-2"></i>Tareas del Curso</h6>
+                            
+                            <form action="{{ url_for('crear_tarea') }}" method="POST" class="d-flex gap-2 mb-3">
+                                <input type="hidden" name="curso_id" value="{{ curso_id }}">
+                                <input type="text" name="titulo_tarea" class="form-control form-control-sm" placeholder="Título de la nueva tarea..." required>
+                                <button type="submit" class="btn btn-success btn-sm text-nowrap">
+                                    <i class="bi bi-plus-circle me-1"></i>Asignar
+                                </button>
+                            </form>
+
+                            {% if tareas %}
+                            <div class="list-group list-group-flush border rounded bg-white" style="max-height: 150px; overflow-y: auto;">
+                                {% for tarea in tareas %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                                    <span class="small text-truncate"><i class="bi bi-file-earmark-text text-muted me-2"></i>{{ tarea.titulo }}</span>
+                                    <form action="{{ url_for('eliminar_tarea') }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta tarea?');">
+                                        <input type="hidden" name="curso_id" value="{{ curso_id }}">
+                                        <input type="hidden" name="tarea_id" value="{{ tarea._id }}">
+                                        <button type="submit" class="btn btn-link text-danger p-0 border-0 m-0 btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted small text-center my-2">No hay tareas creadas para este curso.</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <h6 class="text-secondary mb-3"><i class="bi bi-people-fill me-2"></i>Alumnos Inscritos</h6>
+                            
+                            <form action="{{ url_for('agregar_alumno_curso') }}" method="POST" class="d-flex gap-2 mb-3">
+                                <input type="hidden" name="curso_id" value="{{ curso_id }}">
+                                <select name="alumno_id" class="form-select form-select-sm" required>
+                                    <option value="" disabled selected>Seleccionar alumno para inscribir...</option>
+                                    {% for al_disponible in todos_los_alumnos %}
+                                        <option value="{{ al_disponible._id }}">[{{ al_disponible.matricula }}] {{ al_disponible.nombres }} {{ al_disponible.apellidos }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm text-nowrap">
+                                    <i class="bi bi-person-plus-fill me-1"></i>Inscribir
+                                </button>
+                            </form>
+
+                            {% if alumnos %}
+                            <div class="table-responsive border rounded">
+                                <table class="table table-hover table-sm align-middle mb-0 small">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Matrícula</th>
+                                            <th>Nombre Completo</th>
+                                            <th class="text-center">Progreso</th>
+                                            <th class="text-center">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for alumno in alumnos %}
+                                        <tr>
+                                            <td><code class="text-dark fw-bold">{{ alumno.matricula }}</code></td>
+                                            <td>{{ alumno.nombres }} {{ alumno.apellidos }}</td>
+                                            <td class="text-center">
+                                                <span class="badge {% if alumno.rendimiento >= 70 %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                                    {{ alumno.rendimiento }}%
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <form action="{{ url_for('eliminar_alumno_curso') }}" method="POST" onsubmit="return confirm('¿Remover al alumno de este curso?');">
+                                                    <input type="hidden" name="curso_id" value="{{ curso_id }}">
+                                                    <input type="hidden" name="alumno_id" value="{{ alumno._id }}">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm border-0 py-0 px-1">
+                                                        <i class="bi bi-person-dash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-light text-center py-3 border small text-muted">
+                                No hay alumnos registrados en esta materia todavía.
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid mt-3">
+                            <a href="{{ url_for('evaluar_tareas', curso_id=curso_id) }}" class="btn btn-outline-primary btn-md fw-bold shadow-sm"></a>
+                                <i class="bi bi-check2-square me-2"></i>Abrir Sistema de Evaluación y Entregas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="card border-0 shadow-sm p-5 text-center bg-light text-muted">
+                    <i class="bi bi-arrow-left-right display-4 mb-3 text-secondary text-opacity-50"></i>
+                    <h5>Sin curso activo</h5>
+                    <p class="small mb-0">Selecciona un grupo a la izquierda y presiona sobre una de sus materias vigentes para administrar las tareas y asistencias.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    {% else %}
+        <div class="alert alert-info text-center py-4 shadow-sm">
+            <h5 class="alert-heading fw-bold">👋 ¡Bienvenido al panel de control de Grupos!</h5>
+            <p class="mb-0">Por favor, haz clic en cualquiera de los grupos escolares de la barra superior para gestionar sus clases o asignar nuevas materias.</p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

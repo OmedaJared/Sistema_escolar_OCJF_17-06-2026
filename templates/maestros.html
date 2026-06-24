@@ -3,106 +3,85 @@
 <div class="row">
     <div class="col-xl-4 mb-4">
         <div class="card p-4">
-            <h4 class="mb-3 text-secondary fw-bold"><i class="bi bi-person-badge-fill me-2"></i>Alta de Docente</h4>
-            <form action="{{ url_for('maestros') }}" method="POST">
+            <h4 class="mb-3 text-dark fw-bold"><i class="bi bi-book-half me-2"></i>Nueva Asignatura</h4>
+            <form action="{{ url_for('materias') }}" method="POST">
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">No. de Empleado</label>
-                    <input type="text" name="num_empleado" class="form-control" placeholder="Ej. EMP9988" required>
+                    <label class="form-label fw-semibold">Código de Materia</label>
+                    <input type="text" name="codigo_materia" class="form-control" placeholder="Ej. INF-101" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Nombre Completo</label>
-                    <input type="text" name="nombre_completo" class="form-control" placeholder="Nombre y Apellidos" required>
+                    <label class="form-label fw-semibold">Nombre de la Asignatura</label>
+                    <input type="text" name="nombre_asignatura" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Especialidad / Profesión</label>
-                    <input type="text" name="especialidad" class="form-control" placeholder="Ej. Ingeniería en Sistemas" required>
+                    <label class="form-label fw-semibold">Horas Semanales</label>
+                    <input type="number" name="horas_semanales" min="1" max="20" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Teléfono de Contacto</label>
-                    <input type="tel" name="telefono" class="form-control" placeholder="10 dígitos" required>
+                    <label class="form-label fw-semibold">Créditos</label>
+                    <input type="number" name="creditos" min="1" max="50" class="form-control" required>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Turno Asignado</label>
-                    <select name="turno" class="form-select" required>
-                        <option value="" disabled selected>Seleccione un turno</option>
-                        <option value="Matutino">Matutino</option>
-                        <option value="Vespertino">Vespertino</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-secondary w-100"><i class="bi bi-save me-2"></i>Registrar Docente</button>
+                <button type="submit" class="btn btn-dark w-100"><i class="bi bi-plus-circle me-2"></i>Agregar al Plan</button>
             </form>
         </div>
     </div>
 
     <div class="col-xl-8 mb-4">
         <div class="table-responsive">
-            <h4 class="mb-3 text-dark fw-bold"><i class="bi bi-table me-2"></i>Plantilla Docente Activa</h4>
+            <h4 class="mb-3 text-dark fw-bold"><i class="bi bi-table me-2"></i>Planes de Estudio Vigentes</h4>
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>No. Emp</th>
-                        <th>Nombre</th>
-                        <th>Especialidad</th>
-                        <th>Teléfono</th>
-                        <th>Turno</th>
+                        <th>Código</th>
+                        <th>Asignatura</th>
+                        <th class="text-center">Horas/Semana</th>
+                        <th class="text-center">Créditos</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for maestro in maestros %}
+                    {% for materia in materias %}
                     <tr>
-                        <td class="fw-bold text-secondary">{{ maestro.num_empleado }}</td>
-                        <td>{{ maestro.nombre_completo }}</td>
-                        <td><span class="badge bg-light text-dark border">{{ maestro.especialidad }}</span></td>
-                        <td>{{ maestro.telefono }}</td>
-                        <td>
-                            <span class="badge {% if maestro.turno == 'Matutino' %}bg-info text-dark{% else %}bg-dark{% endif %}">
-                                {{ maestro.turno }}
-                            </span>
-                        </td>
+                        <td class="fw-bold text-primary">{{ materia.codigo_materia }}</td>
+                        <td class="fw-semibold">{{ materia.nombre_asignatura }}</td>
+                        <td class="text-center"><span class="badge bg-light text-dark border px-3">{{ materia.horas_semanales }} hrs</span></td>
+                        <td class="text-center"><span class="badge bg-success-subtle text-success border border-success-subtle px-3">{{ materia.creditos }} pts</span></td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editMaestro{{ maestro._id }}">
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editMateria{{ materia._id }}">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
-                                <a href="{{ url_for('eliminar_maestro', id=maestro._id) }}" class="btn btn-danger" onclick="return confirm('¿Desea dar de baja permanentemente a este maestro?')">
+                                <a href="{{ url_for('eliminar_materia', id=materia._id) }}" class="btn btn-danger" onclick="return confirm('¿Eliminar esta materia del catálogo institucional?')">
                                     <i class="bi bi-trash-fill"></i>
                                 </a>
                             </div>
                         </td>
                     </tr>
 
-                    <div class="modal fade" id="editMaestro{{ maestro._id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal fade" id="editMateria{{ materia._id }}" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header bg-warning text-dark">
-                                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Modificar Maestro: {{ maestro.num_empleado }}</h5>
+                                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Editar Asignatura: {{ materia.codigo_materia }}</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
-                                <form action="{{ url_for('editar_maestro', id=maestro._id) }}" method="POST">
+                                <form action="{{ url_for('editar_materia', id=materia._id) }}" method="POST">
                                     <div class="modal-body">
                                         <div class="mb-3">
-                                            <label class="form-label fw-semibold">Nombre Completo</label>
-                                            <input type="text" name="nombre_completo" class="form-control" value="{{ maestro.nombre_completo }}" required>
+                                            <label class="form-label fw-semibold">Nombre de la Asignatura</label>
+                                            <input type="text" name="nombre_asignatura" class="form-control" value="{{ materia.nombre_asignatura }}" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label fw-semibold">Especialidad / Profesión</label>
-                                            <input type="text" name="especialidad" class="form-control" value="{{ maestro.especialidad }}" required>
+                                            <label class="form-label fw-semibold">Horas Semanales</label>
+                                            <input type="number" name="horas_semanales" min="1" max="20" class="form-control" value="{{ materia.horas_semanales }}" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label fw-semibold">Teléfono de Contacto</label>
-                                            <input type="tel" name="telefono" class="form-control" value="{{ maestro.telefono }}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Turno Asignado</label>
-                                            <select name="turno" class="form-select" required>
-                                                <option value="Matutino" {% if maestro.turno == 'Matutino' %}selected{% endif %}>Matutino</option>
-                                                <option value="Vespertino" {% if maestro.turno == 'Vespertino' %}selected{% endif %}>Vespertino</option>
-                                            </select>
+                                            <label class="form-label fw-semibold">Créditos</label>
+                                            <input type="number" name="creditos" min="1" max="50" class="form-control" value="{{ materia.creditos }}" required>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                                         <button type="submit" class="btn btn-warning text-dark fw-semibold">Guardar Cambios</button>
                                     </div>
                                 </form>
@@ -111,7 +90,7 @@
                     </div>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">No se encontraron docentes en la plantilla actual.</td>
+                        <td colspan="5" class="text-center text-muted py-4">No hay materias dadas de alta en el plan curricular.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

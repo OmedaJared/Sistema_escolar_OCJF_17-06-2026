@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="bi bi-check2-square"></i> Registro de Tareas y Entregas</h3>
+        <a href="{{ url_for('grupos', grupo=grupo, maestro_id=maestro_id) }}" class="btn btn-secondary">
+            Volver a Cursos
+        </a>
+    </div>
+    <div class="card shadow-sm p-3 mb-4 bg-light">
+        <h5>Detalle del Curso actual</h5>
+        <p class="mb-0"><strong>Materia:</strong> {{ materia }} | <strong>Grupo:</strong> {{ grupo }}</p>
+    </div>
+
+    {% if tareas|length == 0 %}
+        <div class="alert alert-warning">
+            No has agregado ninguna tarea para este curso. Regresa a la sección anterior para crear trabajos.
+        </div>
+    {% else %}
+        <form action="{{ url_for('guardar_calificaciones') }}" method="POST">
+    <input type="hidden" name="curso_id" value="{{ curso_id }}">
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-success">Guardar Calificaciones</button>
+    </div>
+</form>
+    {% endif %}
+</div>
+
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Alumno</th>
+            {% for tarea in tareas %}
+                <th>{{ tarea.titulo }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for alumno in alumnos %}
+        <tr>
+            <td>{{ alumno.nombre_completo }} ({{ alumno.matricula }})</td>
+            {% for tarea in tareas %}
+                <td>
+                    {% set llave = alumno._id ~ '_' ~ tarea._id %}
+                    <input type="checkbox" 
+                           name="entrega_{{ alumno._id }}_{{ tarea._id }}" 
+                           {% if entregas_map.get(llave) == 'entregado' %}checked{% endif %}>
+                </td>
+            {% endfor %}
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="{{ (tareas|length) + 1 }}" class="text-center">
+                No hay alumnos inscritos en este curso o no se han cargado correctamente.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
