@@ -1,3 +1,10 @@
+Olmeda Castillo Jared Fernando. correo: 24308060610036@cetis61.edu.mx Especialidad 4-D:programación.
+
+<img width="1280" height="720" alt="WIN_20260417_11_10_58_Pro" src="https://github.com/user-attachments/assets/d230881a-5371-48ad-ad2c-5be1c8ce0ecd" />
+
+
+
+
 Documentación del Sistema Escolar (Flask + MongoDB)
 
 1. Arquitectura y Tecnologías UtilizadasLa aplicación está desarrollada bajo el patrón de arquitectura monolítica y utiliza el framework ágil Flask en conjunto con la base de datos NoSQL MongoDB.ComponenteTecnologíaPropósitoBackend FrameworkFlaskEnrutamiento, procesamiento de peticiones HTTP y renderizado de plantillas.Base de DatosMongoDBAlmacenamiento de datos en formato de documentos BSON (JSON binario).ODM / Driver de BDPyMongoCliente oficial de MongoDB para interactuar con la base de datos desde Python.Variables de EntornoPython-dotenvGestión y aislamiento de credenciales y datos de configuración del sistema.
