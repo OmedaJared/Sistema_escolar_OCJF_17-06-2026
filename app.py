@@ -510,9 +510,8 @@ def evaluar_tareas(curso_id):
 @app.route('/tareas/guardar_calificaciones', methods=['POST'])
 def guardar_calificaciones():
     curso_id = request.form.get('curso_id')
-    
     if not curso_id:
-        flash("Error: No se proporcionó el identificador del curso en el formulario.", "danger")
+        flash("Error: No se proporcionó el ID del curso.", "danger")
         return redirect(url_for('grupos'))
 
     try:
@@ -525,9 +524,10 @@ def guardar_calificaciones():
         return redirect(url_for('grupos'))
         
     materia = curso.get("materia", "Sin materia")
-    grupo_curso = curso.get("grupo", "")
+    grupo_curso = curso.get("grupo", "").strip()  
     lista_tareas = list(db.tareas.find({"curso_id": str(curso_id)}))
 
+    
     for al_id in curso.get("alumnos", []):
         a_id_str = str(al_id)
         for tarea in lista_tareas:
@@ -548,8 +548,13 @@ def guardar_calificaciones():
                 upsert=True
             )
             
-    flash("Calificaciones guardadas correctamente.", "success")
+    flash("Calificaciones y entregas guardadas con éxito.", "success")
+    
+    
     return redirect(url_for('grupos', grupo=grupo_curso, curso_id=curso_id))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+
+

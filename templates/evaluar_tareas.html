@@ -17,13 +17,14 @@
             No has agregado ninguna tarea para este curso. Regresa a la sección anterior para crear trabajos.
         </div>
     {% else %}
-        <form action="{{ url_for('guardar_calificaciones') }}" method="POST">
+        <form action="/tareas/guardar_calificaciones" method="POST">
     <input type="hidden" name="curso_id" value="{{ curso_id }}">
 
     <div class="mt-3">
         <button type="submit" class="btn btn-success">Guardar Calificaciones</button>
+        <a href="/grupos?grupo={{ grupo_seleccionado }}&curso_id={{ curso_id }}" class="btn btn-secondary">Cancelar</a>
     </div>
-</form>
+        </form>
     {% endif %}
 </div>
 
