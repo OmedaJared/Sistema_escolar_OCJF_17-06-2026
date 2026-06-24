@@ -6,27 +6,23 @@ app = Flask(__name__)
 app.secret_key = "clave_secreta_institucional_desarrollo"
 
 db = get_db()
-# --- HELPER PARA CALCULAR RENDIMIENTO CORREGIDO ---
 def calcular_rendimiento_alumno(alumno_id, curso_id):
     try:
-        # 1. Contamos cuántas tareas existen para este curso en total
+
         tareas_curso = list(db.tareas.find({"curso_id": str(curso_id)}))
         tareas_totales = len(tareas_curso)
         
         if tareas_totales == 0:
-            return 100  # Si no hay tareas, el alumno va al corriente (100%)
+            return 100  
 
-        # 2. Extraemos los IDs de esas tareas como texto
         lista_tarea_ids = [str(t["_id"]) for t in tareas_curso]
 
-        # 3. Contamos cuántas de ESAS tareas específicas ya entregó el alumno
         tareas_entregadas = db.entregas.count_documents({
             "alumno_id": str(alumno_id),
             "tarea_id": {"$in": lista_tarea_ids},
             "estado": "entregado"
         })
 
-        # 4. Retornamos el porcentaje real entero
         return int((tareas_entregadas / tareas_totales) * 100)
     except Exception as e:
         print(f"Error al calcular rendimiento: {e}")
@@ -227,23 +223,18 @@ def eliminar_materia(id):
 
 
 # --- GRUPOS ---
-# --- GRUPOS ---
 @app.route('/grupos', methods=['GET', 'POST'])
 def grupos():
-    # 1. En lugar de usar una lista predeterminada, traemos los grupos reales creados en la base de datos
     try:
         cursos_en_db = list(db.inscripciones_cursos.find())
-        # Obtenemos los nombres de los grupos únicos que ya existen creados
         grupos_disponibles = sorted(list(set([c.get("grupo", "").strip() for c in cursos_en_db if c.get("grupo")])))
     except Exception:
         grupos_disponibles = []
 
-    # Cargamos los selectores para el formulario de creación
     maestros_disponibles = list(db.maestros.find())
     materias_disponibles = list(db.materias.find())
     todos_los_alumnos = list(db.alumnos.find())
 
-    # Obtener el grupo y curso seleccionado actual (para visualización)
     grupo_seleccionado = request.form.get('grupo_id') or request.args.get('grupo_id') or request.form.get('grupo') or request.args.get('grupo')
     if grupo_seleccionado:
         grupo_seleccionado = grupo_seleccionado.strip()
@@ -257,9 +248,7 @@ def grupos():
     materia_nombre = ""
     docente_asignado = None
 
-    # 2. PROCESAR LA CREACIÓN DEL NUEVO GRUPO / CURSO
     if request.method == 'POST' and request.form.get('action') == 'crear_curso':
-        # Capturamos el nombre personalizado que el maestro escribió en el input de texto
         grupo_destino = request.form.get('grupo', '').strip()
         materia = request.form.get('materia', '').strip()
         maestro_id = request.form.get('maestro_id', '').strip()
@@ -268,13 +257,11 @@ def grupos():
             flash("Todos los campos (Nombre de grupo, Materia y Docente) son obligatorios.", "danger")
             return redirect(url_for('grupos'))
 
-        # Validamos si ya existe exactamente esa combinación
         existe = db.inscripciones_cursos.find_one({"grupo": grupo_destino, "materia": materia})
         if existe:
             flash(f"El grupo '{grupo_destino}' ya tiene un curso asignado para la materia de {materia}.", "warning")
             return redirect(url_for('grupos', grupo=grupo_destino))
         
-        # Insertamos el nuevo grupo con su materia y docente asignado
         db.inscripciones_cursos.insert_one({
             "grupo": grupo_destino,
             "materia": materia,
@@ -284,7 +271,6 @@ def grupos():
         flash(f"Grupo '{grupo_destino}' creado con éxito para la materia {materia}.", "success")
         return redirect(url_for('grupos', grupo=grupo_destino))
 
-    # 3. VISUALIZACIÓN DEL GRUPO SELECCIONADO (Mantiene el comportamiento original)
     if grupo_seleccionado:
         cursos_del_grupo = list(db.inscripciones_cursos.find({"grupo": grupo_seleccionado}))
         if curso_seleccionado_id:
@@ -391,7 +377,6 @@ def crear_curso():
     return redirect(url_for('grupos', grupo=grupo))
 
 
-# --- ACCIONES DE ALUMNO Y TAREAS (Mantiene el estado 'grupo' y 'curso' activo) ---
 @app.route('/cursos/agregar_alumno', methods=['POST'])
 def agregar_alumno_curso():
     curso_id = request.form.get('curso_id')
@@ -539,10 +524,9 @@ def guardar_calificaciones():
         return redirect(url_for('grupos'))
         
     materia = curso.get("materia", "Sin materia")
-    grupo_curso = curso.get("grupo", "").strip()  # <--- Obtenemos el nombre del grupo dinámico
+    grupo_curso = curso.get("grupo", "").strip()
     lista_tareas = list(db.tareas.find({"curso_id": str(curso_id)}))
 
-    # Guardar o actualizar el estado de cada checkbox en la base de datos
     for al_id in curso.get("alumnos", []):
         a_id_str = str(al_id)
         for tarea in lista_tareas:
@@ -565,7 +549,7 @@ def guardar_calificaciones():
             
     flash("Calificaciones y entregas guardadas con éxito.", "success")
     
-    # REDIRECCIÓN CLAVE: Regresa a la pantalla principal del grupo para que se refresque la barra amarilla
+    
     return redirect(url_for('grupos', grupo=grupo_curso, curso_id=curso_id))
 
 if __name__ == '__main__':
