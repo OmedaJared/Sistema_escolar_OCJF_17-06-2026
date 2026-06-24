@@ -7,27 +7,22 @@ app.secret_key = "clave_secreta_institucional_desarrollo"
 
 db = get_db()
 
-
 def calcular_rendimiento_alumno(alumno_id, curso_id):
     try:
-        
         tareas_curso = list(db.tareas.find({"curso_id": str(curso_id)}))
         tareas_totales = len(tareas_curso)
         
         if tareas_totales == 0:
-            return 100 
+            return 100  
 
-        
         lista_tarea_ids = [str(t["_id"]) for t in tareas_curso]
 
-        
         tareas_entregadas = db.entregas.count_documents({
             "alumno_id": str(alumno_id),
             "tarea_id": {"$in": lista_tarea_ids},
             "estado": "entregado"
         })
 
-        
         return int((tareas_entregadas / tareas_totales) * 100)
     except Exception as e:
         print(f"Error al calcular rendimiento: {e}")
@@ -164,6 +159,7 @@ def eliminar_maestro(id):
     return redirect(url_for('maestros'))
 
 
+# --- MATERIAS ---
 @app.route('/materias', methods=['GET', 'POST'])
 def materias():
     if request.method == 'POST':
@@ -226,20 +222,14 @@ def eliminar_materia(id):
     return redirect(url_for('materias'))
 
 
+# --- GRUPOS ---
 @app.route('/grupos', methods=['GET', 'POST'])
 def grupos():
-    grupos_predeterminados = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B", "6A", "6B"]
     try:
         cursos_en_db = list(db.inscripciones_cursos.find())
-        grupos_existentes = [c.get("grupo", "").strip() for c in cursos_en_db if c.get("grupo")]
+        grupos_disponibles = sorted(list(set([c.get("grupo", "").strip() for c in cursos_en_db if c.get("grupo")])))
     except Exception:
-        grupos_existentes = []
-
-    todos_los_grupos = list(set(grupos_predeterminados + grupos_existentes))
-    def extraer_numero_semestre(nombre_grupo):
-        digitos = "".join([char for char in nombre_grupo if char.isdigit()])
-        return int(digitos) if digitos else 99
-    grupos_disponibles = sorted(todos_los_grupos, key=extraer_numero_semestre)
+        grupos_disponibles = []
 
     maestros_disponibles = list(db.maestros.find())
     materias_disponibles = list(db.materias.find())
@@ -262,15 +252,24 @@ def grupos():
         grupo_destino = request.form.get('grupo', '').strip()
         materia = request.form.get('materia', '').strip()
         maestro_id = request.form.get('maestro_id', '').strip()
-        if grupo_destino and materia:
-            db.inscripciones_cursos.insert_one({
-                "grupo": grupo_destino,
-                "materia": materia,
-                "maestro_id": maestro_id,
-                "alumnos": []
-            })
-            flash("Curso creado con éxito.", "success")
+
+        if not (grupo_destino and materia and maestro_id):
+            flash("Todos los campos (Nombre de grupo, Materia y Docente) son obligatorios.", "danger")
+            return redirect(url_for('grupos'))
+
+        existe = db.inscripciones_cursos.find_one({"grupo": grupo_destino, "materia": materia})
+        if existe:
+            flash(f"El grupo '{grupo_destino}' ya tiene un curso asignado para la materia de {materia}.", "warning")
             return redirect(url_for('grupos', grupo=grupo_destino))
+        
+        db.inscripciones_cursos.insert_one({
+            "grupo": grupo_destino,
+            "materia": materia,
+            "maestro_id": maestro_id,
+            "alumnos": []
+        })
+        flash(f"Grupo '{grupo_destino}' creado con éxito para la materia {materia}.", "success")
+        return redirect(url_for('grupos', grupo=grupo_destino))
 
     if grupo_seleccionado:
         cursos_del_grupo = list(db.inscripciones_cursos.find({"grupo": grupo_seleccionado}))
@@ -325,7 +324,7 @@ def grupos():
         maestros=maestros_disponibles,
         materias=materias_disponibles,
         todos_los_alumnos=todos_los_alumnos,
-        docente=docente_asignado, 
+        docente=docente_asignado,
         curso=curso,
         curso_id=curso_seleccionado_id if curso_seleccionado_id else "",
         materia=materia_nombre,
